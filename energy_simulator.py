@@ -1,6 +1,6 @@
 import task
 import edf_analyze as edf
-import energy_analyze as energy
+import interEDF_analyze as energy
 import tkinter as tk
 
 # Generate the components that will be needed in the functions, which must be declared before being used
@@ -24,7 +24,7 @@ canvasHeight=50
 offset=10
 
 edfScheduleGraph = tk.Canvas(width=canvasWidth+offset, height=canvasHeight)
-energyScheduleGraph = tk.Canvas(width=canvasHeight+offset, height=canvasHeight)
+interEDFScheduleGraph = tk.Canvas(width=canvasHeight+offset, height=canvasHeight)
 
 # Next method is the Scrollbox generation, which will generate a scrollbox with the list of tasks that exist
 def generateScrollbox():
@@ -71,22 +71,22 @@ def runAnalyses():
     edfSchedule = edf.generateSchedule(taskList)
     for e in edfSchedule:
         print("{}{}{}{}{}{}".format("Task: ", e[3], " Start Time: ", e[0], " End Time: ", e[1]))
-    energySchedule = energy.generateSchedule(taskList)
     edfEnergy = edf.energyUse(edfSchedule)
-    efficientEnergy = energy.energyUse(energySchedule)
+    interEDFSchedule = energy.generateSchedule(edfSchedule, edfEnergy, length)
+    efficientEnergy = energy.energyUse(interEDFSchedule)
 
     # Display the generated schedules and energy usages
     edfLabel.config(text="{}{}".format("EDF Energy Usage: ", edfEnergy))
-    energyLabel.config(text="{}{}".format("Efficient Energy Usage: ", efficientEnergy))
+    energyLabel.config(text="{}{}".format("Static Voltage EDF Energy Usage: ", efficientEnergy))    # TODO : LIMIT DECIMAL PLACES
 
     edfScheduleGraph.delete("all")
-    energyScheduleGraph.delete("all")
+    interEDFScheduleGraph.delete("all")
 
     # Graph the EDF Schedule
     count = 0
     for event in edfSchedule:
         startCoord = int(event[0]*canvasWidth/length)+int(offset/2)
-        endCoord   = int((event[2]+event[0])*canvasWidth/length)+int(offset/2)
+        endCoord   = int((event[2]+event[0])*canvasWidth/length)+int(offset/2) # TODO : REVIEW THIS
         edfScheduleGraph.create_rectangle(startCoord,20,endCoord,canvasHeight,fill=event[4])
         if count != 0:
             edfScheduleGraph.create_text(startCoord,10,text=event[0])
@@ -99,35 +99,40 @@ def runAnalyses():
 
     # Graph the Energy Schedule
     count = 0
-    for event in energySchedule:
-        startCoord  = int(event[0]*canvasWidth/length)+int(offset/2)
-        endCoord    = startCoord + int(event[2]*canvasWidth/length)
-        heightCoord = 20 + int((1.0-event[5])*(canvasHeight-20))
-        energyScheduleGraph.create_rectangle(startCoord,heightCoord,endCoord,canvasHeight,fill=event[4])
+    
+    for event in interEDFSchedule:
+        print(event)
+        startCoord = int(event[0]*canvasWidth/length)+int(offset/2)
+        endCoord   = int((event[2]+event[0])*canvasWidth/length)+int(offset/2) # TODO : REVIEW THIS
+        heightCoord = 20 + int(event[5]*float(canvasHeight-20))
+        interEDFScheduleGraph.create_rectangle(startCoord,heightCoord,endCoord,canvasHeight,fill=event[4])
+        print(startCoord)
+        print(endCoord)
+        print(heightCoord)
         if count != 0:
-            energyScheduleGraph.create_text(startCoord,10,text=event[0])
-        energyScheduleGraph.create_text(endCoord,10,text=(event[0]+event[2]))
+            interEDFScheduleGraph.create_text(startCoord,10,text=event[0])
+        interEDFScheduleGraph.create_text(endCoord,10,text=(event[0]+event[2]))
         count += 1
     
-    energyScheduleGraph.create_text(int(offset/2),10,text="0")
-    energyScheduleGraph.create_text(canvasWidth,10,text=length)
-    energyScheduleGraph.create_rectangle(int(offset/2),20,canvasWidth+int(offset/2),canvasHeight)
+    interEDFScheduleGraph.create_text(int(offset/2),10,text="0")
+    interEDFScheduleGraph.create_text(canvasWidth+int(offset/2),10,text=length)
+    interEDFScheduleGraph.create_rectangle(int(offset/2),20,canvasWidth+int(offset/2),canvasHeight)
 
 # Generate and set up the main parts of the GUI, and start the window up and running
 # Add the necessary labels and put the entries on the grid
 taskLabel     = tk.Label(text="Runtime: ")
 deadlineLabel = tk.Label(text="Deadline: ")
 removeLabel   = tk.Label(text="Task: ")
-taskLabel.grid(column=3, row=0)
-runEntry.grid(column=4, row=0)
-deadlineLabel.grid(column=5, row=0)
-deadlineEntry.grid(column=6, row=0)
-removeLabel.grid(column=4,row=1)
-removeEntry.grid(column=5,row=1)
+taskLabel.grid(column=3, row=0,sticky='E')
+runEntry.grid(column=4, row=0,sticky='W')
+deadlineLabel.grid(column=5, row=0,sticky='E')
+deadlineEntry.grid(column=6, row=0,sticky='W')
+removeLabel.grid(column=3,row=1,columnspan=2,sticky='E')
+removeEntry.grid(column=5,row=1,columnspan=2,sticky='W')
 edfLabel.grid(column=3,row=3, columnspan=2)
-energyLabel.grid(column=5,row=3, columnspan=2)
-edfScheduleGraph.grid(column=0, row=4, columnspan=6)
-energyScheduleGraph.grid(column=0, row=5, columnspan=6)
+energyLabel.grid(column=5,row=3, columnspan=3)
+edfScheduleGraph.grid(column=0, row=4, columnspan=7)
+interEDFScheduleGraph.grid(column=0, row=5, columnspan=7)
 
 # Add all the necessary buttons
 buttonWidth = 10

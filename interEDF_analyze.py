@@ -8,6 +8,8 @@
 def generateSchedule(edfSchedule, edfEnergy, lcm):
     scheduleList = []
     if edfEnergy == lcm:
+        for item in edfSchedule:
+            item.append(1)
         return edfSchedule
     percent = edfEnergy / lcm
     invPercent = 1.0 / percent

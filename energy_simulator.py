@@ -41,7 +41,6 @@ def generateScrollbox():
 # Next method is the Add Task button, which will add a task using the parameters in boxes 1 and 2 and reset those boxes
 def addTask():
     print("Button was pressed!")
-    # TODO ADD TASK
     runtime = int(runEntry.get())
     deadline = int(deadlineEntry.get())
     print("{}{}{}{}".format("Runtime: ",runtime," Deadline:",deadline))
@@ -73,11 +72,11 @@ def runAnalyses():
         print("{}{}{}{}{}{}".format("Task: ", e[3], " Start Time: ", e[0], " End Time: ", e[1]))
     edfEnergy = edf.energyUse(edfSchedule)
     interEDFSchedule = energy.generateSchedule(edfSchedule, edfEnergy, length)
-    efficientEnergy = energy.energyUse(interEDFSchedule)
+    interEDFEnergy = energy.energyUse(interEDFSchedule)
 
     # Display the generated schedules and energy usages
     edfLabel.config(text="{}{}".format("EDF Energy Usage: ", edfEnergy))
-    energyLabel.config(text="{}{}".format("Static Voltage EDF Energy Usage: ", efficientEnergy))    # TODO : LIMIT DECIMAL PLACES
+    energyLabel.config(text="{}{:.2f}".format("Static Voltage EDF Energy Usage: ", interEDFEnergy))
 
     edfScheduleGraph.delete("all")
     interEDFScheduleGraph.delete("all")
@@ -86,7 +85,7 @@ def runAnalyses():
     count = 0
     for event in edfSchedule:
         startCoord = int(event[0]*canvasWidth/length)+int(offset/2)
-        endCoord   = int((event[2]+event[0])*canvasWidth/length)+int(offset/2) # TODO : REVIEW THIS
+        endCoord   = int((event[2]+event[0])*canvasWidth/length)+int(offset/2)
         edfScheduleGraph.create_rectangle(startCoord,20,endCoord,canvasHeight,fill=event[4])
         if count != 0:
             edfScheduleGraph.create_text(startCoord,10,text=event[0])
@@ -103,8 +102,8 @@ def runAnalyses():
     for event in interEDFSchedule:
         print(event)
         startCoord = int(event[0]*canvasWidth/length)+int(offset/2)
-        endCoord   = int((event[2]+event[0])*canvasWidth/length)+int(offset/2) # TODO : REVIEW THIS
-        heightCoord = 20 + int(event[5]*float(canvasHeight-20))
+        endCoord   = int((event[2]+event[0])*canvasWidth/length)+int(offset/2)
+        heightCoord = 20 + (canvasHeight-20-int(event[5]*float(canvasHeight-20)))
         interEDFScheduleGraph.create_rectangle(startCoord,heightCoord,endCoord,canvasHeight,fill=event[4])
         print(startCoord)
         print(endCoord)
@@ -131,8 +130,8 @@ removeLabel.grid(column=3,row=1,columnspan=2,sticky='E')
 removeEntry.grid(column=5,row=1,columnspan=2,sticky='W')
 edfLabel.grid(column=3,row=3, columnspan=2)
 energyLabel.grid(column=5,row=3, columnspan=3)
-edfScheduleGraph.grid(column=0, row=4, columnspan=7)
-interEDFScheduleGraph.grid(column=0, row=5, columnspan=7)
+edfScheduleGraph.grid(column=0, row=4, columnspan=8)
+interEDFScheduleGraph.grid(column=0, row=5, columnspan=8)
 
 # Add all the necessary buttons
 buttonWidth = 10

@@ -7,9 +7,11 @@ class Task:
     the individual Task, comparing with other Tasks, and eventually creating a schedule
     out of.
     """
-    def __init__(self, runtime, deadline):
+    def __init__(self, runtime, deadline, minruntime, minpercent):
         self.runtime = runtime
         self.deadline = deadline
+        self.minruntime = minruntime
+        self.minpercent = minpercent
 
     def getString(self):
         s = "{}{}{}{}".format(" Runtime: ", self.runtime, " Deadline: ", self.deadline)

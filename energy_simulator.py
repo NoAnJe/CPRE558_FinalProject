@@ -7,6 +7,7 @@ import tkinter as tk
 # Generate the components that will be needed in the functions, which must be declared before being used
 taskList = []
 window = tk.Tk()
+window.title("EDF Schedule Generator")
 runEntry = tk.Entry(width=5)
 deadlineEntry = tk.Entry(width=5)
 initEntry = tk.Entry(width=5)

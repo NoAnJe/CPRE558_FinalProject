@@ -22,7 +22,6 @@ def generateSchedule(taskList):
     i = 0
     for task in taskList:
         mult = deadline / task.deadline
-        print(int(mult))
         color=colors[i]
         for j in range(int(mult)):
             currDeadline = task.deadline * (j+1)
@@ -31,15 +30,27 @@ def generateSchedule(taskList):
         i += 1
     
     scheduleList.sort(key = lambda x: x[0])
-    scheduleList.sort(key = lambda x: x[1])
+    schedule2 = []
+    currentStart = 0
+    tempList = []
+    for task in scheduleList:
+        if currentStart == task[0]:
+            tempList.append(task)
+        else:
+            tempList.sort(key = lambda x: x[1])
+            schedule2.extend(tempList)
+            tempList.clear()
+            tempList.append(task)
+            currentStart = task[0]
+    schedule2.extend(tempList)
 
     prev = 0
-    for task in scheduleList[1:]:
-        if task[0] < (scheduleList[prev][0]+scheduleList[prev][2]):
-            task[0] = scheduleList[prev][0]+scheduleList[prev][2]
+    for task in schedule2[1:]:
+        if task[0] < (schedule2[prev][0]+schedule2[prev][2]):
+            task[0] = schedule2[prev][0]+schedule2[prev][2]
         prev += 1
     
-    return scheduleList
+    return schedule2
 
 def energyUse(scheduleList):
     totalEnergy = 0

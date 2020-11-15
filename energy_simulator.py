@@ -23,9 +23,9 @@ taskListPage = tk.Listbox(yscrollcommand=scrollbar.set, width=30)
 taskListPage.grid(column=0, row=0, columnspan=3, rowspan=3)
 scrollbar.config(command=taskListPage.yview)
 
-canvasWidth=500
+canvasWidth=550
 canvasHeight=50
-offset=10
+offset=20
 
 edfScheduleGraph = tk.Canvas(width=canvasWidth+offset, height=canvasHeight)
 interEDFScheduleGraph = tk.Canvas(width=canvasWidth+offset, height=canvasHeight)
@@ -80,8 +80,14 @@ def removeTask():
 # The final method is the Run method, which will individually call both analyses and print the results
 def runAnalyses():
     print("Running analyses!")
+    edfScheduleGraph.delete("all")
+    interEDFScheduleGraph.delete("all")
+    intraEDFScheduleGraph.delete("all")
     if (not edf.isSchedulable(taskList)):
         print("Not schedulable")
+        edfLabel.config(text="")
+        energyLabel.config(text="")
+        intraLabel.config(text="This is not schedulable; try removing some tasks.")
         return
 
     # Generate the schedules and run the energy usages
@@ -99,10 +105,6 @@ def runAnalyses():
     edfLabel.config(text="{}{}".format("EDF Energy Usage: ", edfEnergy))
     energyLabel.config(text="{}{:.2f}".format("Static Voltage EDF Energy Usage: ", interEDFEnergy))
     intraLabel.config(text="{}{:.2f}".format("Intratask Scheduled EDF Energy Usage: ", intraEDFEnergy))
-
-    edfScheduleGraph.delete("all")
-    interEDFScheduleGraph.delete("all")
-    intraEDFScheduleGraph.delete("all")
 
     # Graph the EDF Schedule
     count = 0
@@ -159,6 +161,46 @@ def runAnalyses():
     intraEDFScheduleGraph.create_text(int(offset/2),10,text="0")
     intraEDFScheduleGraph.create_rectangle(int(offset/2),20,canvasWidth+int(offset/2),canvasHeight)
 
+def launchHelp():
+    helpWindow = tk.Tk()
+    S = tk.Scrollbar(helpWindow)
+    T = tk.Text(helpWindow, height=12, width=100)
+    S.pack(side=tk.RIGHT, fill=tk.Y)
+    T.pack(side=tk.LEFT, fill=tk.Y)
+    S.config(command=T.yview)
+    T.config(yscrollcommand=S.set)
+    addButtonInfo = """Add Button
+    This button adds the task parameters to a new Task, adds the Task to the list of tasks, and
+    resets the parameter entry points to 0. There are four parameters, two of which are optional:
+        Runtime (Required)
+            This determines the runtime of the task at a frequency of 1. This must be less than
+            or equal to the deadline.
+        Deadline (Required)
+            This is the deadline for the Task (and the time at which it repeats). If there are
+            multiple tasks, the deadlines are used to calculate the Lowest Common Multiple (such
+            as 90 for the deadlines 30 and 45).
+        Initial Portion Runtime (Optional)
+            If intratask simulations are to be run on this Task, this simulates the first portion,
+            which must have a minimum frequency of Initial Portion Min Percent. This also must
+            have a runtime less than or equal to the runtime.
+        Inital Portion Min Percent (Optional)
+            If intratask simulations are to be run on this Task, this simulates the minimum
+            frequency for the first portion (the Initial Portion Runtime). If the frequency
+            determined by the intertask scheduler is greater than this frequency, this has no
+            effect. If this is set to greater than 1, it automatically is set to 1.\n"""
+    removeButtonInfo = """\nRemove Task Button
+    This button removes the task specified in the field to the left. The number should correspond
+    to the value in the list.\n"""
+    calculateButtonInfo = """\nSchedule Tasks Button
+    This button calculates the schedules using a standard EDF algorithm, an energy-aware intertask
+    DVS EDF algorithm, and an energy-aware intratask EDF algorithm. The final energy usages are
+    also reported for each schedule.\n"""
+    T.insert(tk.END, addButtonInfo)
+    T.insert(tk.END, removeButtonInfo)
+    T.insert(tk.END, calculateButtonInfo)
+
+    helpWindow.mainloop()
+
 # Generate and set up the main parts of the GUI, and start the window up and running
 # Add the necessary labels and put the entries on the grid
 taskLabel     = tk.Label(text="Runtime: ")
@@ -188,6 +230,8 @@ buttonWidth = 10
 buttonHeight = 2
 addButton = tk.Button(text="Add Task", width=buttonWidth, height=buttonHeight, bg="green", fg="black", command=addTask, relief="groove")
 addButton.grid(column=7, row=0)
+helpButton = tk.Button(text="Help", width=buttonWidth, height=buttonHeight, bg="blue", fg="black", command=launchHelp, relief="groove")
+helpButton.grid(column=7, row=1)
 removeButton = tk.Button(text="Remove Task", width=buttonWidth+1, height=buttonHeight, bg="red", fg="black", command=removeTask, relief="groove")
 removeButton.grid(column=7, row=2)
 runButton = tk.Button(text="Schedule Tasks", width=buttonWidth+3, height=buttonHeight, bg="green", fg="black", command=runAnalyses, relief="groove")

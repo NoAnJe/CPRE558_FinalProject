@@ -9,7 +9,6 @@ def generateSchedule(taskList, edfSchedule, edfEnergy, lcm):
             item.append(1)
         return edfSchedule
     for item in edfSchedule:
-        print(item)
         task = taskList[item[3]]
         if task.minpercent < item[5]:
             scheduleList.append(item)

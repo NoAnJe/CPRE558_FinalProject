@@ -14,19 +14,31 @@ def generateSchedule(edfSchedule, edfEnergy, lcm):
     percent = edfEnergy / lcm
     invPercent = 1.0 / percent
     prevEnd = 0
-    for item in edfSchedule:
-        print(item)
+    index = 0
+    while index < len(edfSchedule):
+        item = edfSchedule[index]
         start = item[0] * invPercent
         runtime = item[2] * invPercent
         thisPercent = percent
         if prevEnd != start:    # If it starts later than the previous ending, move it up
             start = prevEnd
             thisPercent = (item[2]) / (runtime)
-        if (runtime + start) > item[1]:       # If it exceeds the allowable runtime, move up the ending
-            runtime = item[1] - start
-            thisPercent = (item[2]) / (runtime)
-        prevEnd = runtime + start
-        scheduleList.append([start, item[1], runtime, item[3], item[4], thisPercent])
+        if (runtime + start) > item[1]:       # If it exceeds the allowable runtime, try swapping tasks
+            if (edfSchedule[index - 1][1] < item[1]):
+                runtime = item[1] - start
+                thisPercent = (item[2]) / (runtime)
+                prevEnd = runtime + start
+                scheduleList.append([start, item[1], runtime, item[3], item[4], thisPercent])
+            else:
+                scheduleList.pop(index - 1)
+                edfSchedule[index] = edfSchedule[index - 1]
+                edfSchedule[index - 1] = item
+                prevEnd = scheduleList[index - 2][0]+scheduleList[index - 2][2]
+                index -= 2
+        else:
+            prevEnd = runtime + start
+            scheduleList.append([start, item[1], runtime, item[3], item[4], thisPercent])
+        index += 1
     return scheduleList
 
 def energyUse(scheduleList):
